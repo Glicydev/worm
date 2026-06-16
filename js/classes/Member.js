@@ -19,7 +19,9 @@ export default class Member {
     }
 
     rotate(angle) {
-        const delta = angle - this.angle;
+        let delta = angle - this.angle;
+        delta /= this.length ** 2 / 1000; // More length = harder to rotate
+
         const force = {
             x: this.length * Math.cos(VectorMath.degreeToRadian(delta)) * this.strenght,
             y: this.length * Math.sin(VectorMath.degreeToRadian(delta)) * this.strenght

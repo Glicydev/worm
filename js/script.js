@@ -129,10 +129,6 @@ function waveEnd() {
         CreatureGenerator.generateCreature()
     ];
 
-    if (selectedCreatureIndex !== null && selectedCreatureIndex >= creatures.length) {
-        selectedCreatureIndex = null;
-    }
-
     renderTeleportButtons();
 }
 

@@ -17,10 +17,13 @@ export default class Articulation extends Sprite {
     }
 
     render() {
+        document.querySelector("main").appendChild(this.toHTMLElement());
+    }
+
+    clear() {
         const oldElement = document.getElementById(`articulation-${this.id}`);
         if (oldElement) {
             oldElement.remove();
         }
-        document.querySelector("main").appendChild(this.toHTMLElement());
     }
 }

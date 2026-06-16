@@ -52,14 +52,6 @@ export default class Member {
         return memberElement;
     }
 
-    render() {
-        const oldElement = document.getElementById(`member-${this.id}`);
-        if (oldElement) {
-            oldElement.remove();
-        }
-        document.querySelector("main").appendChild(this.toHTMLElement());
-    }
-
     updateWay() {
         let condition;
 
@@ -67,10 +59,6 @@ export default class Member {
             condition = this.angle >= this.targetAngles[this.targetAngleIndex];
         } else {
             condition = this.angle <= this.targetAngles[this.targetAngleIndex];
-        }
-
-        if (this.id === 1) {
-            console.log(condition)
         }
 
         if (condition) {
@@ -99,5 +87,16 @@ export default class Member {
 
         this.velocity.x *= FRICTION;
         this.velocity.y *= FRICTION;
+    }
+
+    clear() {
+        const oldElement = document.getElementById(`member-${this.id}`);
+        if (oldElement) {
+            oldElement.remove();
+        }
+    }
+
+    render() {
+        document.querySelector("main").appendChild(this.toHTMLElement());
     }
 }

@@ -1,23 +1,93 @@
 import CreatureGenerator from "./classes/CreatureGenerator.js";
+import VectorMath from "./classes/VectorMath.js";
 
 const interval = 1000 / 60;
+let secondsInWave = 10;
+let time = 0;
 
 let grabbing = false;
 let lastMouseX = 0;
 let lastMouseY = 0;
 
 const main = document.querySelector("main");
+const teleportBar = document.getElementById("worm-teleport-bar");
+let teleportAnimationTimeout = null;
 
-const creatures = [
-    CreatureGenerator.generateCreature(2),
-    CreatureGenerator.generateCreature(3),
-    CreatureGenerator.generateCreature(4),
-    CreatureGenerator.generateCreature(5),
-    CreatureGenerator.generateCreature(6),
-    CreatureGenerator.generateCreature(7)
+let creatures = [
+    CreatureGenerator.generateCreature(),
+    CreatureGenerator.generateCreature(),
+    CreatureGenerator.generateCreature(),
+    CreatureGenerator.generateCreature(),
+    CreatureGenerator.generateCreature(),
+    CreatureGenerator.generateCreature(),
+    CreatureGenerator.generateCreature(),
+    CreatureGenerator.generateCreature(),
+    CreatureGenerator.generateCreature(),
+    CreatureGenerator.generateCreature(),
+    CreatureGenerator.generateCreature(),
+    CreatureGenerator.generateCreature(),
+    CreatureGenerator.generateCreature(),
+    CreatureGenerator.generateCreature(),
+    CreatureGenerator.generateCreature(),
+    CreatureGenerator.generateCreature(),
+    CreatureGenerator.generateCreature()
 ];
 
+let selectedCreatureIndex = null;
+
+function focusCreature(index) {
+    const creature = creatures[index];
+    if (!creature) return;
+
+    const head = creature.articulations[0];
+    const targetLeft = window.innerWidth / 2 - head.x;
+    const targetTop = window.innerHeight / 2 - head.y;
+
+    main.style.transition = "left 360ms cubic-bezier(0.22, 0.61, 0.36, 1), top 360ms cubic-bezier(0.22, 0.61, 0.36, 1)";
+    main.style.left = `${targetLeft}px`;
+    main.style.top = `${targetTop}px`;
+
+    if (teleportAnimationTimeout) {
+        clearTimeout(teleportAnimationTimeout);
+    }
+
+    teleportAnimationTimeout = setTimeout(() => {
+        main.style.transition = "none";
+    }, 380);
+
+    selectedCreatureIndex = index;
+    renderTeleportButtons();
+}
+
+function renderTeleportButtons() {
+    if (!teleportBar) return;
+
+    teleportBar.innerHTML = "";
+
+    creatures.forEach((_, index) => {
+        const button = document.createElement("button");
+        button.textContent = `Ver ${index + 1}`;
+        button.title = `Téléporter la caméra vers le ver ${index + 1}`;
+        button.setAttribute("aria-label", `Téléporter vers le ver ${index + 1}`);
+
+        if (selectedCreatureIndex === index) {
+            button.classList.add("active");
+        }
+
+        button.addEventListener("click", () => focusCreature(index));
+        teleportBar.appendChild(button);
+    });
+}
+
+renderTeleportButtons();
+
 function update() {
+    time += interval / 1000;
+
+    if (time >= secondsInWave) {
+        waveEnd();
+    }
+
     creatures.forEach(creature => creature.update())
 }
 
@@ -25,12 +95,55 @@ function draw() {
     creatures.forEach(creature => creature.draw())
 }
 
+function waveEnd() {
+    time = 0;
+    const bestCreatures = creatures.sort((a, b) => {
+        const aDistance = VectorMath.distance(a.articulations[0], a.startPosition);
+        const bDistance = VectorMath.distance(b.articulations[0], b.startPosition);
+
+        a.clear();
+        b.clear();
+
+        return bDistance - aDistance;
+    }).slice(0, 5);
+
+    bestCreatures.forEach(creature => creature.reset());
+
+    creatures = [
+        ...bestCreatures,
+        CreatureGenerator.generateCreature(),
+        CreatureGenerator.generateCreature(),
+        CreatureGenerator.generateCreature(),
+        CreatureGenerator.generateCreature(),
+        CreatureGenerator.generateCreature(),
+        CreatureGenerator.generateCreature(),
+        CreatureGenerator.generateCreature(),
+        CreatureGenerator.generateCreature(),
+        CreatureGenerator.generateCreature(),
+        CreatureGenerator.generateCreature(),
+        CreatureGenerator.generateCreature(),
+        CreatureGenerator.generateCreature(),
+        CreatureGenerator.generateCreature(),
+        CreatureGenerator.generateCreature()
+    ];
+
+    if (selectedCreatureIndex !== null && selectedCreatureIndex >= creatures.length) {
+        selectedCreatureIndex = null;
+    }
+
+    renderTeleportButtons();
+}
+
 setInterval(() => {
     update();
     draw();
 }, interval);
 
-document.addEventListener("mousedown", () => {
+document.addEventListener("mousedown", (event) => {
+    if (teleportBar && teleportBar.contains(event.target)) return;
+
+    main.style.transition = "none";
+
     grabbing = true;
     document.body.style.cursor = "grabbing";
 });
@@ -58,4 +171,22 @@ document.addEventListener("mousemove", (event) => {
 
     main.style.left = `${left + dx}px`;
     main.style.top = `${top + dy}px`;
+});
+
+// Scroll
+let scroll = 1000;
+
+const scrollIndication = document.getElementById("scrollIndication");
+
+window.addEventListener("wheel", (event) => {
+    if (teleportBar && teleportBar.contains(event.target)) return;
+
+    event.preventDefault();
+
+    scroll -= event.deltaY;
+    scroll = Math.max(100, scroll);
+
+    main.style.transform = `scale(${scroll / 1000})`;
+
+    scrollIndication.textContent = `Zoom : ${Math.round((scroll / 1000) * 100)}%`;
 });

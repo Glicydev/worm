@@ -33,10 +33,10 @@ let creatures = [
     CreatureGenerator.generateCreature()
 ];
 
-let selectedCreatureIndex = null;
+let selectedCreatureID = null;
 
-function focusCreature(index) {
-    const creature = creatures[index];
+function focusCreature(id) {
+    const creature = creatures.find(c => c.id === id);
     if (!creature) return;
 
     const head = creature.articulations[0];
@@ -55,7 +55,7 @@ function focusCreature(index) {
         main.style.transition = "none";
     }, 380);
 
-    selectedCreatureIndex = index;
+    selectedCreatureID = id;
     renderTeleportButtons();
 }
 
@@ -64,17 +64,19 @@ function renderTeleportButtons() {
 
     teleportBar.innerHTML = "";
 
-    creatures.forEach((_, index) => {
-        const button = document.createElement("button");
-        button.textContent = `Ver ${index + 1}`;
-        button.title = `Téléporter la caméra vers le ver ${index + 1}`;
-        button.setAttribute("aria-label", `Téléporter vers le ver ${index + 1}`);
+    creatures.forEach((creature) => {
+        const id = creature.id;
 
-        if (selectedCreatureIndex === index) {
+        const button = document.createElement("button");
+        button.textContent = `Ver ${id}`;
+        button.title = `Téléporter la caméra vers le ver ${id}`;
+        button.setAttribute("aria-label", `Téléporter vers le ver ${id}`);
+
+        if (selectedCreatureID === id) {
             button.classList.add("active");
         }
 
-        button.addEventListener("click", () => focusCreature(index));
+        button.addEventListener("click", () => focusCreature(id));
         teleportBar.appendChild(button);
     });
 }

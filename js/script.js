@@ -37,7 +37,7 @@ document.addEventListener("mousedown", () => {
 
 document.addEventListener("mouseup", () => {
     grabbing = false;
-    document.body.style.cursor = "default";
+    document.body.style.cursor = "grab";
 });
 
 document.addEventListener("mousemove", (event) => {

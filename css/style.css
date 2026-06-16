@@ -129,4 +129,5 @@ main {
 
 .creature-name {
     font-size: 20px;
+    white-space: nowrap;
 }

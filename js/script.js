@@ -2,7 +2,7 @@ import CreatureGenerator from "./classes/CreatureGenerator.js";
 import VectorMath from "./classes/VectorMath.js";
 
 const interval = 1000 / 60;
-let secondsInWave = 10;
+let secondsInWave = 2;
 let time = 0;
 
 let grabbing = false;
@@ -99,7 +99,8 @@ function draw() {
 
 function waveEnd() {
     time = 0;
-    const bestCreatures = creatures.sort((a, b) => {
+    CreatureGenerator.resetId(5);
+    const sortedCreatures = creatures.sort((a, b) => {
         const aDistance = VectorMath.distance(a.articulations[0], a.startPosition);
         const bDistance = VectorMath.distance(b.articulations[0], b.startPosition);
 
@@ -107,27 +108,19 @@ function waveEnd() {
         b.clear();
 
         return bDistance - aDistance;
-    }).slice(0, 5);
+    });
+
+    const bestCreatures = sortedCreatures.slice(0, 4);
+    const wrostCreatures = sortedCreatures.slice(4);
 
     bestCreatures.forEach(creature => creature.reset());
 
+    const newCreatures = wrostCreatures.map(creature => CreatureGenerator.generateCreature(creature.id));
+
     creatures = [
         ...bestCreatures,
-        CreatureGenerator.generateCreature(),
-        CreatureGenerator.generateCreature(),
-        CreatureGenerator.generateCreature(),
-        CreatureGenerator.generateCreature(),
-        CreatureGenerator.generateCreature(),
-        CreatureGenerator.generateCreature(),
-        CreatureGenerator.generateCreature(),
-        CreatureGenerator.generateCreature(),
-        CreatureGenerator.generateCreature(),
-        CreatureGenerator.generateCreature(),
-        CreatureGenerator.generateCreature(),
-        CreatureGenerator.generateCreature(),
-        CreatureGenerator.generateCreature(),
-        CreatureGenerator.generateCreature()
-    ];
+        ...newCreatures
+    ].sort((a, b) => a.id - b.id);
 
     renderTeleportButtons();
 }

@@ -13,11 +13,10 @@ export default class CreatureGenerator {
     }
 
     static generateArticulation(id) {
-        console.log(id)
         return new Articulation(id, Math.random() * 200 + 1200, Math.random() * 200 + 500);
     }
 
-    static generateCreature(numArticulations = Math.floor(Math.random() * 8) + 2) {
+    static generateCreature(paramId = null, numArticulations = Math.floor(Math.random() * 8) + 2) {
         const articulations = [];
 
         for (let i = 0; i < numArticulations; i++) {
@@ -45,6 +44,6 @@ export default class CreatureGenerator {
 
         creatureId++;
 
-        return new Creature(creatureId, articulations, members);
+        return new Creature(paramId || creatureId, articulations, members);
     }
 }

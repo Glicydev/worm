@@ -2,7 +2,7 @@ import CreatureGenerator from "./classes/CreatureGenerator.js";
 import VectorMath from "./classes/VectorMath.js";
 
 const interval = 1000 / 60;
-let secondsInWave = 2;
+let secondsInWave = 30;
 let time = 0;
 
 let grabbing = false;

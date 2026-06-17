@@ -111,6 +111,6 @@ export default class Creature {
 
     getScore() {
         const distance = VectorMath.distance(this.articulations[0], this.startPosition);
-        return distance * 3 - this.spentEnergy * 4;
+        return distance * 45 - this.spentEnergy / 8;
     }
 }

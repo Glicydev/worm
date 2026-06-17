@@ -117,8 +117,6 @@ function waveEnd() {
         a.clear();
         b.clear();
 
-        console.log(aScore, bScore)
-
         return bScore - aScore;
     });
 
@@ -139,7 +137,6 @@ function waveEnd() {
     for (let i = newCreatures.length; i < numberOfNewCreatures; i++) {
         newCreatures.push(CreatureGenerator.generateCreature(availableIds[i]));
     }
-
 
     creatures = [
         ...bestCreatures,

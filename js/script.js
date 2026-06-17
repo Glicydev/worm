@@ -15,11 +15,32 @@ let lastMouseY = 0;
 
 const main = document.querySelector("main");
 const teleportBar = document.getElementById("worm-teleport-bar");
+const statsId = document.getElementById("worm-stats-id");
+const statsDistance = document.getElementById("worm-stats-distance");
+const statsEnergy = document.getElementById("worm-stats-energy");
+const statsScore = document.getElementById("worm-stats-score");
 let teleportAnimationTimeout = null;
 
 let creatures = new Array(numberOfWorms).fill().map(() => CreatureGenerator.generateCreature());
 
-let selectedCreatureID = null;
+let selectedCreatureID = creatures[0].id || null;
+
+function getSelectedCreature() {
+    return creatures.find(creature => creature.id === selectedCreatureID) || creatures[0] || null;
+}
+
+function renderStatsPanel() {
+    const creature = getSelectedCreature();
+
+    if (!creature || !statsId || !statsDistance || !statsEnergy || !statsScore) return;
+
+    const distance = VectorMath.distance(creature.articulations[0], creature.startPosition);
+
+    statsId.textContent = `Ver ${creature.id}`;
+    statsDistance.textContent = `${distance.toFixed(0)}`;
+    statsEnergy.textContent = `${Math.round(creature.spentEnergy / 1000)}`;
+    statsScore.textContent = `${Math.round(creature.getScore() / 10e3)}`;
+}
 
 function focusCreature(id) {
     const creature = creatures.find(c => c.id === id);
@@ -43,6 +64,7 @@ function focusCreature(id) {
 
     selectedCreatureID = id;
     renderTeleportButtons();
+    renderStatsPanel();
 }
 
 function renderTeleportButtons() {
@@ -68,6 +90,7 @@ function renderTeleportButtons() {
 }
 
 renderTeleportButtons();
+renderStatsPanel();
 
 function update() {
     time += interval / 1000;
@@ -77,6 +100,7 @@ function update() {
     }
 
     creatures.forEach(creature => creature.update())
+    renderStatsPanel();
 }
 
 function draw() {
@@ -87,13 +111,15 @@ function waveEnd() {
     time = 0;
     CreatureGenerator.resetId(5);
     const sortedCreatures = creatures.sort((a, b) => {
-        const aDistance = VectorMath.distance(a.articulations[0], a.startPosition);
-        const bDistance = VectorMath.distance(b.articulations[0], b.startPosition);
+        const aScore = a.getScore();
+        const bScore = b.getScore();
 
         a.clear();
         b.clear();
 
-        return bDistance - aDistance;
+        console.log(aScore, bScore)
+
+        return bScore - aScore;
     });
 
     const bestCreatures = sortedCreatures.slice(0, numberOfBestWorms - 1);
@@ -119,9 +145,11 @@ function waveEnd() {
         ...bestCreatures,
         ...newCreatures
     ].sort((a, b) => a.id - b.id);
-    console.log(creatures);
+
+    selectedCreatureID = creatures[0].id || null;
 
     renderTeleportButtons();
+    renderStatsPanel();
 }
 
 setInterval(() => {

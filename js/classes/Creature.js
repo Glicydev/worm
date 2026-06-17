@@ -1,5 +1,6 @@
 import Articulation from "./Articulation.js";
 import CreatureGenerator from "./CreatureGenerator.js";
+import VectorMath from "./VectorMath.js";
 
 export default class Creature {
     constructor(id, articulations, members) {
@@ -11,6 +12,8 @@ export default class Creature {
             x: articulations[0].x,
             y: articulations[0].y
         };
+
+        this.spentEnergy = 0;
     }
 
     draw() {
@@ -25,6 +28,8 @@ export default class Creature {
         nameP.style.position = "absolute";
         nameP.style.left = `${this.articulations[0].x}px`;
         nameP.style.top = `${this.articulations[0].y - 20}px`;
+        nameP.style.pointerEvents = "none";
+
         document.querySelector("main").appendChild(nameP);
     }
 
@@ -32,7 +37,7 @@ export default class Creature {
         this.clear();
 
         this.members.forEach(member => {
-            member.rotate(member.way);
+            this.spentEnergy += member.rotate(member.way);
             member.update();
         });
     }
@@ -102,5 +107,10 @@ export default class Creature {
         }
 
         return clone;
+    }
+
+    getScore() {
+        const distance = VectorMath.distance(this.articulations[0], this.startPosition);
+        return distance * 3 - this.spentEnergy * 4;
     }
 }

@@ -27,6 +27,8 @@ export default class Member {
             y: this.length * Math.sin(VectorMath.degreeToRadian(delta)) * this.strenght
         };
 
+        const spentEnergy = Math.sqrt(force.x ** 2 + force.y ** 2) * this.length / 100;
+
         this.velocity.x += force.x / MOVE_FACTOR;
         this.velocity.y += force.y / MOVE_FACTOR;
 
@@ -36,6 +38,8 @@ export default class Member {
             this.angle += 360;
         }
         this.angle += angle;
+
+        return spentEnergy;
     }
 
     toHTMLElement() {

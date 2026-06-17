@@ -99,4 +99,13 @@ export default class Member {
     render() {
         document.querySelector("main").appendChild(this.toHTMLElement());
     }
+
+    mutate() {
+        if (Math.random() < 0.5) {
+            const newTargetAngles = this.targetAngles.map(angle => {
+                const delta = Math.random() * 50 - 25;
+                return angle + delta;
+            });
+        }
+    }
 }

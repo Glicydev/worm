@@ -1,3 +1,6 @@
+import Articulation from "./Articulation.js";
+import CreatureGenerator from "./CreatureGenerator.js";
+
 export default class Creature {
     constructor(id, articulations, members) {
         this.articulations = articulations;
@@ -45,7 +48,59 @@ export default class Creature {
     }
 
     reset() {
-        this.articulations[0].x = this.startPosition.x;
-        this.articulations[0].y = this.startPosition.y;
+        this.articulations.forEach(articulation => articulation.reset());
+    }
+
+    clone(newId) {
+        const clonedArticulations = this.articulations.map((articulation) => {
+            const clonedArticulation = CreatureGenerator.generateArticulation();
+            clonedArticulation.x = articulation.x;
+            clonedArticulation.y = articulation.y;
+            clonedArticulation.startPosition = {...articulation.startPosition };
+            return clonedArticulation;
+        });
+
+        const clonedMembers = this.members.map((member, index) => {
+            const startArticulation = clonedArticulations[index];
+            const endArticulation = clonedArticulations[index + 1];
+            const clonedMember = CreatureGenerator.generateMember(startArticulation, endArticulation);
+
+            clonedMember.targetAngles = [...member.targetAngles];
+            clonedMember.targetAngleIndex = member.targetAngleIndex;
+            clonedMember.way = member.way;
+            clonedMember.angle = member.angle;
+            clonedMember.velocity = {...member.velocity };
+            clonedMember.length = member.length;
+            clonedMember.strenght = member.strenght;
+
+            return clonedMember;
+        });
+
+        return new Creature(newId, clonedArticulations, clonedMembers);
+    }
+
+    mutate(newId) {
+        const clone = this.clone(newId);
+
+        clone.articulations.forEach((articulation, index) => articulation.mutate(clone.articulations[index - 1] || articulation));
+        clone.members.forEach(member => member.mutate());
+
+        const shouldChangeMemberNumber = Math.random() < 0.8;
+
+        if (!shouldChangeMemberNumber) return clone;
+
+        if (Math.random() < 0.5 && clone.members.length > 1) {
+            clone.members.pop();
+            clone.articulations.pop();
+        } else {
+            const lastArticulation = clone.articulations[clone.articulations.length - 1];
+            const newArticulation = CreatureGenerator.generateArticulation();
+            clone.articulations.push(newArticulation);
+
+            const newMember = CreatureGenerator.generateMember(lastArticulation, newArticulation);
+            clone.members.push(newMember);
+        }
+
+        return clone;
     }
 }

@@ -1,9 +1,13 @@
 import CreatureGenerator from "./classes/CreatureGenerator.js";
 import VectorMath from "./classes/VectorMath.js";
 
-const interval = 1000 / 60;
-let secondsInWave = 30;
+const interval = 1000 / 70;
+let secondsInWave = 5;
 let time = 0;
+
+const numberOfWorms = 30;
+const numberOfBestWorms = 10;
+const diversity = 0.7;
 
 let grabbing = false;
 let lastMouseX = 0;
@@ -13,25 +17,7 @@ const main = document.querySelector("main");
 const teleportBar = document.getElementById("worm-teleport-bar");
 let teleportAnimationTimeout = null;
 
-let creatures = [
-    CreatureGenerator.generateCreature(),
-    CreatureGenerator.generateCreature(),
-    CreatureGenerator.generateCreature(),
-    CreatureGenerator.generateCreature(),
-    CreatureGenerator.generateCreature(),
-    CreatureGenerator.generateCreature(),
-    CreatureGenerator.generateCreature(),
-    CreatureGenerator.generateCreature(),
-    CreatureGenerator.generateCreature(),
-    CreatureGenerator.generateCreature(),
-    CreatureGenerator.generateCreature(),
-    CreatureGenerator.generateCreature(),
-    CreatureGenerator.generateCreature(),
-    CreatureGenerator.generateCreature(),
-    CreatureGenerator.generateCreature(),
-    CreatureGenerator.generateCreature(),
-    CreatureGenerator.generateCreature()
-];
+let creatures = new Array(numberOfWorms).fill().map(() => CreatureGenerator.generateCreature());
 
 let selectedCreatureID = null;
 
@@ -110,17 +96,30 @@ function waveEnd() {
         return bDistance - aDistance;
     });
 
-    const bestCreatures = sortedCreatures.slice(0, 4);
-    const wrostCreatures = sortedCreatures.slice(4);
+    const bestCreatures = sortedCreatures.slice(0, numberOfBestWorms - 1);
 
-    bestCreatures.forEach(creature => creature.reset());
+    creatures.forEach(creature => creature.reset());
 
-    const newCreatures = wrostCreatures.map(creature => CreatureGenerator.generateCreature(creature.id));
+    const availableIds = creatures
+        .map(creature => creature.id)
+        .filter(id => !bestCreatures.some(bestCreature => bestCreature.id === id));
+
+    const numberOfNewCreatures = numberOfWorms - bestCreatures.length;
+    const newCreatures = Array.from({ length: numberOfNewCreatures * (1 - diversity) }, (_, index) => {
+        const parent = bestCreatures[index % bestCreatures.length];
+        return parent.mutate(availableIds[index]);
+    });
+
+    for (let i = newCreatures.length; i < numberOfNewCreatures; i++) {
+        newCreatures.push(CreatureGenerator.generateCreature(availableIds[i]));
+    }
+
 
     creatures = [
         ...bestCreatures,
         ...newCreatures
     ].sort((a, b) => a.id - b.id);
+    console.log(creatures);
 
     renderTeleportButtons();
 }
@@ -170,10 +169,6 @@ let scroll = 1000;
 const scrollIndication = document.getElementById("scrollIndication");
 
 window.addEventListener("wheel", (event) => {
-    if (teleportBar && teleportBar.contains(event.target)) return;
-
-    event.preventDefault();
-
     scroll -= event.deltaY;
     scroll = Math.max(100, scroll);
 

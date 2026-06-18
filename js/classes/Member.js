@@ -1,4 +1,4 @@
-import { FRICTION, MOVE_FACTOR } from "../consts.js";
+import { friction, moveFactor } from "../consts.js";
 import VectorMath from "./VectorMath.js";
 
 export default class Member {
@@ -7,7 +7,7 @@ export default class Member {
         this.length = VectorMath.distance(startArticulation, endArticulation);
         this.startArticulation = startArticulation;
         this.endArticulation = endArticulation;
-        this.angle = VectorMath.angleBetweenFromHorizontal(startArticulation, endArticulation);
+        this.angle = VectorMath.radianToDegree(VectorMath.angleBetweenFromHorizontal(startArticulation, endArticulation));
         this.velocity = {
             x: 0,
             y: 0
@@ -19,24 +19,24 @@ export default class Member {
     }
 
     rotate(angle) {
-        let delta = angle - this.angle;
-        delta /= this.length ** 2 / 1000; // More length = harder to rotate
+        this.angle += angle / this.length ** 2 / 5000; // More length = harder to rotate
 
         const force = {
-            x: this.length * Math.cos(VectorMath.degreeToRadian(delta)) * this.strenght,
-            y: this.length * Math.sin(VectorMath.degreeToRadian(delta)) * this.strenght
+            x: this.length * Math.cos(VectorMath.degreeToRadian(this.angle)) * this.strenght,
+            y: this.length * Math.sin(VectorMath.degreeToRadian(this.angle)) * this.strenght
         };
 
         const spentEnergy = Math.sqrt(force.x ** 2 + force.y ** 2) * this.length / 100;
 
-        this.velocity.x += force.x / MOVE_FACTOR;
-        this.velocity.y += force.y / MOVE_FACTOR;
+        this.velocity.x += force.x / (100 - moveFactor);
+        this.velocity.y += force.y / (100 - moveFactor);
 
         if (this.angle + angle > 360) {
             this.angle -= 360;
         } else if (this.angle + angle < 0) {
             this.angle += 360;
         }
+
         this.angle += angle;
 
         return spentEnergy;
@@ -89,8 +89,8 @@ export default class Member {
         this.endArticulation.x -= this.velocity.x / 2;
         this.endArticulation.y -= this.velocity.y / 2;
 
-        this.velocity.x *= FRICTION;
-        this.velocity.y *= FRICTION;
+        this.velocity.x *= 1 - friction;
+        this.velocity.y *= 1 - friction;
     }
 
     clear() {

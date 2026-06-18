@@ -9,10 +9,14 @@ export default class VectorMath {
         return degree * (Math.PI / 180);
     }
 
+    static radianToDegree(radian) {
+        return radian * (180 / Math.PI);
+    }
+
     static angleBetweenFromHorizontal(pointA, pointB) {
         const dx = pointB.x - pointA.x;
         const dy = pointB.y - pointA.y;
-        return Math.atan2(dy, dx);
+        return VectorMath.radianToDegree(Math.atan2(dy, dx));
     }
 
     static getWay(angleA, angleB) {

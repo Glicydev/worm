@@ -27,32 +27,11 @@ main {
     height: 100%;
 }
 
-#worm-teleport-bar {
+#worm-leaderboard {
     position: fixed;
-    left: 50%;
-    bottom: 18px;
-    transform: translateX(-50%);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    max-width: 50vw;
-    width: max-content;
-    padding: 10px;
-    overflow-x: auto;
-    border-radius: 16px;
-    border: 1px solid var(--surface-border);
-    background: var(--surface);
-    box-shadow: 0 8px 24px rgba(16, 58, 45, 0.26);
-    backdrop-filter: blur(10px) saturate(1.2);
-    z-index: 1000;
-    animation: reveal-bar 380ms ease-out;
-}
-
-#worm-stats-panel {
-    position: fixed;
-    right: 18px;
-    bottom: 18px;
-    min-width: 220px;
+    left: 18px;
+    top: 18px;
+    min-width: 240px;
     padding: 12px 14px;
     border-radius: 16px;
     border: 1px solid var(--surface-border);
@@ -60,7 +39,165 @@ main {
     box-shadow: 0 8px 24px rgba(16, 58, 45, 0.22);
     backdrop-filter: blur(10px) saturate(1.2);
     z-index: 1000;
-    animation: reveal-bar 380ms ease-out;
+    animation: reveal-panel 380ms ease-out;
+}
+
+#worm-wave-hud {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(360px, calc(100vw - 36px));
+    padding: 12px 14px;
+    border-radius: 16px;
+    border: 1px solid var(--surface-border);
+    background: linear-gradient(180deg, rgba(235, 252, 243, 0.94), rgba(222, 245, 233, 0.84));
+    box-shadow: 0 8px 24px rgba(16, 58, 45, 0.22);
+    backdrop-filter: blur(10px) saturate(1.2);
+    z-index: 1000;
+    animation: reveal-panel 380ms ease-out;
+}
+
+.wave-hud-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+    color: var(--text);
+}
+
+.wave-hud-row strong {
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+}
+
+.wave-hud-row span {
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.78;
+}
+
+.wave-bar {
+    width: 100%;
+    height: 14px;
+    padding: 2px;
+    border-radius: 999px;
+    border: 1px solid rgba(15, 118, 110, 0.32);
+    background: rgba(255, 255, 255, 0.74);
+    overflow: hidden;
+}
+
+#worm-wave-bar-fill {
+    width: 0%;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #79e2b7, var(--accent), var(--accent-strong));
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+    transition: width 70ms linear;
+}
+
+#worm-leaderboard-list {
+    display: grid;
+    gap: 8px;
+}
+
+.leaderboard-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    border: 1px solid rgba(15, 118, 110, 0.45);
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.88);
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    transition: transform 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.leaderboard-row:hover {
+    transform: translateY(-1px);
+    background: rgba(226, 250, 245, 0.95);
+    box-shadow: 0 4px 14px rgba(12, 85, 78, 0.18);
+}
+
+.leaderboard-row.active {
+    border-color: transparent;
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    color: #ffffff;
+}
+
+.leaderboard-rank,
+.leaderboard-score {
+    font-variant-numeric: tabular-nums;
+}
+
+.leaderboard-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#worm-control-panel {
+    position: fixed;
+    left: 18px;
+    bottom: 18px;
+    width: min(420px, calc(100vw - 36px));
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid var(--surface-border);
+    background: linear-gradient(180deg, rgba(235, 252, 243, 0.96), rgba(222, 245, 233, 0.88));
+    box-shadow: 0 8px 24px rgba(16, 58, 45, 0.22);
+    backdrop-filter: blur(10px) saturate(1.2);
+    z-index: 1000;
+    animation: reveal-panel 380ms ease-out;
+    display: grid;
+    gap: 12px;
+}
+
+.panel-topbar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.panel-tab {
+    border: 1px solid rgba(15, 118, 110, 0.45);
+    padding: 10px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.88);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    transition: transform 160ms ease, background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.panel-tab:hover {
+    transform: translateY(-1px);
+    background: rgba(226, 250, 245, 0.95);
+    box-shadow: 0 4px 14px rgba(12, 85, 78, 0.18);
+}
+
+.panel-tab.active {
+    border-color: transparent;
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    color: #ffffff;
+    box-shadow: 0 5px 16px rgba(10, 94, 88, 0.35);
+}
+
+.panel-section {
+    display: none;
+    gap: 10px;
+}
+
+.panel-section.active {
+    display: grid;
 }
 
 .panel-heading {
@@ -77,21 +214,33 @@ main {
     gap: 6px;
 }
 
-.stats-item {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    align-items: baseline;
-    color: var(--text);
-    font-size: 13px;
-}
-
-.stats-item span {
+.setting-row span {
     opacity: 0.72;
 }
 
-.stats-item strong {
-    font-variant-numeric: tabular-nums;
+#worm-control-panel input[type="range"] {
+    width: 100%;
+    margin: 0;
+    accent-color: var(--accent);
+}
+
+#worm-control-panel select {
+    width: 100%;
+    border: 1px solid rgba(15, 118, 110, 0.45);
+    border-radius: 12px;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.88);
+    color: var(--text);
+    font: inherit;
+}
+
+#worm-teleport-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-height: 220px;
+    overflow: auto;
+    padding: 4px 2px 2px;
 }
 
 #worm-teleport-bar button {
@@ -130,14 +279,14 @@ main {
     border-radius: 100px;
 }
 
-@keyframes reveal-bar {
+@keyframes reveal-panel {
     from {
         opacity: 0;
-        transform: translateX(-50%) translateY(16px);
+        transform: translateY(16px);
     }
     to {
         opacity: 1;
-        transform: translateX(-50%) translateY(0);
+        transform: translateY(0);
     }
 }
 

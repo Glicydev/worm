@@ -1,5 +1,5 @@
 import CreatureGenerator from "./classes/CreatureGenerator.js";
-import VectorMath from "./classes/VectorMath.js";
+import { friction, moveFactor, setFriction, setMoveFactor } from "./consts.js";
 
 const interval = 1000 / 70;
 let secondsInWave = 5;
@@ -14,32 +14,132 @@ let lastMouseX = 0;
 let lastMouseY = 0;
 
 const main = document.querySelector("main");
+const controlPanel = document.getElementById("worm-control-panel");
+const panelTabs = document.querySelectorAll("[data-panel-tab]");
+const panelSections = document.querySelectorAll("[data-panel-section]");
+const waveNumber = document.getElementById("worm-wave-number");
+const waveTime = document.getElementById("worm-wave-time");
+const waveBarFill = document.getElementById("worm-wave-bar-fill");
+const waveBar = document.querySelector(".wave-bar");
+const leaderboardList = document.getElementById("worm-leaderboard-list");
 const teleportBar = document.getElementById("worm-teleport-bar");
-const statsId = document.getElementById("worm-stats-id");
-const statsDistance = document.getElementById("worm-stats-distance");
-const statsEnergy = document.getElementById("worm-stats-energy");
-const statsScore = document.getElementById("worm-stats-score");
+const settingsFriction = document.getElementById("settings-friction");
+const settingsMoveFactor = document.getElementById("settings-move-factor");
+const settingsFrictionValue = document.getElementById("settings-friction-value");
+const settingsMoveFactorValue = document.getElementById("settings-move-factor-value");
+const scrollIndication = document.getElementById("scrollIndication");
+
 let teleportAnimationTimeout = null;
+let currentWave = 1;
 
 let creatures = new Array(numberOfWorms).fill().map(() => CreatureGenerator.generateCreature());
-
 let selectedCreatureID = creatures[0].id || null;
+
+function setActivePanel(panelName) {
+    panelTabs.forEach((tab) => {
+        tab.classList.toggle("active", tab.dataset.panelTab === panelName);
+    });
+
+    panelSections.forEach((section) => {
+        section.classList.toggle("active", section.dataset.panelSection === panelName);
+    });
+}
+
+panelTabs.forEach((tab) => {
+    tab.addEventListener("click", () => setActivePanel(tab.dataset.panelTab));
+});
 
 function getSelectedCreature() {
     return creatures.find(creature => creature.id === selectedCreatureID) || creatures[0] || null;
 }
 
-function renderStatsPanel() {
-    const creature = getSelectedCreature();
+function renderSettingsValues() {
+    if (settingsFrictionValue) {
+        settingsFrictionValue.textContent = friction.toFixed(2);
+    }
 
-    if (!creature || !statsId || !statsDistance || !statsEnergy || !statsScore) return;
+    if (settingsMoveFactorValue) {
+        settingsMoveFactorValue.textContent = `${moveFactor}`;
+    }
+}
 
-    const distance = VectorMath.distance(creature.articulations[0], creature.startPosition);
+function renderWaveHud() {
+    const progress = Math.min(1, time / secondsInWave);
+    const elapsedSeconds = time.toFixed(1);
+    const remainingSeconds = Math.max(0, secondsInWave - time).toFixed(1);
 
-    statsId.textContent = `Ver ${creature.id}`;
-    statsDistance.textContent = `${distance.toFixed(0)}`;
-    statsEnergy.textContent = `${Math.round(creature.spentEnergy / 1000)}`;
-    statsScore.textContent = `${Math.round(creature.getScore() / 10e3)}`;
+    if (waveNumber) {
+        waveNumber.textContent = `${currentWave}`;
+    }
+
+    if (waveTime) {
+        waveTime.textContent = `${elapsedSeconds}s / ${secondsInWave.toFixed(1)}s`;
+        waveTime.title = `${remainingSeconds}s restants`;
+    }
+
+    if (waveBarFill) {
+        waveBarFill.style.width = `${progress * 100}%`;
+    }
+
+    if (waveBar) {
+        waveBar.setAttribute("aria-valuenow", `${Math.round(progress * 100)}`);
+        waveBar.setAttribute("aria-valuetext", `${Math.round(progress * 100)}%`);
+    }
+}
+
+function renderTeleportButtons() {
+    if (!teleportBar) return;
+
+    teleportBar.innerHTML = "";
+
+    creatures.forEach((creature) => {
+        const button = document.createElement("button");
+        button.textContent = `Ver ${creature.id}`;
+        button.title = `Téléporter la caméra vers le ver ${creature.id}`;
+        button.setAttribute("aria-label", `Téléporter vers le ver ${creature.id}`);
+
+        if (selectedCreatureID === creature.id) {
+            button.classList.add("active");
+        }
+
+        button.addEventListener("click", () => focusCreature(creature.id));
+        teleportBar.appendChild(button);
+    });
+}
+
+function renderLeaderboard() {
+    if (!leaderboardList) return;
+
+    leaderboardList.innerHTML = "";
+
+    const rankedCreatures = [...creatures]
+        .sort((a, b) => b.getScore() - a.getScore())
+        .slice(0, 5);
+
+    rankedCreatures.forEach((creature, index) => {
+        const row = document.createElement("button");
+        row.type = "button";
+        row.className = "leaderboard-row";
+
+        if (creature.id === selectedCreatureID) {
+            row.classList.add("active");
+        }
+
+        row.innerHTML = `
+            <span class="leaderboard-rank">#${index + 1}</span>
+            <span class="leaderboard-name">Ver ${creature.id}</span>
+            <strong class="leaderboard-score">${Math.round(creature.getScore() / 1000)}</strong>
+        `;
+
+        row.addEventListener("click", () => focusCreature(creature.id));
+        leaderboardList.appendChild(row);
+    });
+}
+
+function renderControlPanel() {
+    renderSettingsValues();
+    renderTeleportButtons();
+    renderLeaderboard();
 }
 
 function focusCreature(id) {
@@ -63,34 +163,28 @@ function focusCreature(id) {
     }, 380);
 
     selectedCreatureID = id;
-    renderTeleportButtons();
-    renderStatsPanel();
+    renderControlPanel();
 }
 
-function renderTeleportButtons() {
-    if (!teleportBar) return;
-
-    teleportBar.innerHTML = "";
-
-    creatures.forEach((creature) => {
-        const id = creature.id;
-
-        const button = document.createElement("button");
-        button.textContent = `Ver ${id}`;
-        button.title = `Téléporter la caméra vers le ver ${id}`;
-        button.setAttribute("aria-label", `Téléporter vers le ver ${id}`);
-
-        if (selectedCreatureID === id) {
-            button.classList.add("active");
-        }
-
-        button.addEventListener("click", () => focusCreature(id));
-        teleportBar.appendChild(button);
+if (settingsFriction) {
+    settingsFriction.value = `${friction}`;
+    settingsFriction.addEventListener("input", (event) => {
+        setFriction(event.target.value);
+        renderSettingsValues();
     });
 }
 
-renderTeleportButtons();
-renderStatsPanel();
+if (settingsMoveFactor) {
+    settingsMoveFactor.value = `${moveFactor}`;
+    settingsMoveFactor.addEventListener("input", (event) => {
+        setMoveFactor(event.target.value);
+        renderSettingsValues();
+    });
+}
+
+renderControlPanel();
+setActivePanel("settings");
+renderWaveHud();
 
 function update() {
     time += interval / 1000;
@@ -99,17 +193,20 @@ function update() {
         waveEnd();
     }
 
-    creatures.forEach(creature => creature.update())
-    renderStatsPanel();
+    creatures.forEach(creature => creature.update());
+    renderLeaderboard();
+    renderWaveHud();
 }
 
 function draw() {
-    creatures.forEach(creature => creature.draw())
+    creatures.forEach(creature => creature.draw());
 }
 
 function waveEnd() {
     time = 0;
+    currentWave += 1;
     CreatureGenerator.resetId(5);
+
     const sortedCreatures = creatures.sort((a, b) => {
         const aScore = a.getScore();
         const bScore = b.getScore();
@@ -144,9 +241,8 @@ function waveEnd() {
     ].sort((a, b) => a.id - b.id);
 
     selectedCreatureID = creatures[0].id || null;
-
-    renderTeleportButtons();
-    renderStatsPanel();
+    renderControlPanel();
+    renderWaveHud();
 }
 
 setInterval(() => {
@@ -155,7 +251,7 @@ setInterval(() => {
 }, interval);
 
 document.addEventListener("mousedown", (event) => {
-    if (teleportBar && teleportBar.contains(event.target)) return;
+    if ((controlPanel && controlPanel.contains(event.target)) || (leaderboardList && leaderboardList.contains(event.target))) return;
 
     main.style.transition = "none";
 
@@ -180,18 +276,14 @@ document.addEventListener("mousemove", (event) => {
     const dx = event.clientX - oldLastMouseX;
     const dy = event.clientY - oldLastMouseY;
 
-    let left = parseFloat(main.style.left) || 0;
-    let top = parseFloat(main.style.top) || 0;
-
+    const left = parseFloat(main.style.left) || 0;
+    const top = parseFloat(main.style.top) || 0;
 
     main.style.left = `${left + dx}px`;
     main.style.top = `${top + dy}px`;
 });
 
-// Scroll
 let scroll = 1000;
-
-const scrollIndication = document.getElementById("scrollIndication");
 
 window.addEventListener("wheel", (event) => {
     scroll -= event.deltaY;
@@ -199,5 +291,7 @@ window.addEventListener("wheel", (event) => {
 
     main.style.transform = `scale(${scroll / 1000})`;
 
-    scrollIndication.textContent = `Zoom : ${Math.round((scroll / 1000) * 100)}%`;
+    if (scrollIndication) {
+        scrollIndication.textContent = `Zoom : ${Math.round((scroll / 1000) * 100)}%`;
+    }
 });

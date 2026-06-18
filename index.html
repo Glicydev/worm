@@ -16,15 +16,47 @@
 
     </main>
 
-    <div id="worm-teleport-bar"></div>
-    <div id="worm-stats-panel" aria-label="Statistiques du ver sélectionné">
-        <div class="panel-heading">Statistiques</div>
-        <div class="stats-grid">
-            <div class="stats-item"><span>Ver</span><strong id="worm-stats-id">-</strong></div>
-            <div class="stats-item"><span>Distance</span><strong id="worm-stats-distance">0</strong></div>
-            <div class="stats-item"><span>Énergie</span><strong id="worm-stats-energy">0.00 / 1000</strong></div>
-            <div class="stats-item"><span>Score</span><strong id="worm-stats-score">0</strong></div>
+    <div id="worm-wave-hud" aria-label="Wave en cours">
+        <div class="wave-hud-row">
+            <div class="panel-heading">Wave</div>
+            <strong id="worm-wave-number">1</strong>
+            <span id="worm-wave-time">0.0s / 5.0s</span>
         </div>
+        <div class="wave-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="worm-wave-bar-fill"></div>
+        </div>
+    </div>
+
+    <div id="worm-leaderboard" aria-label="Classement des meilleurs vers">
+        <div class="panel-heading">Leaderboard</div>
+        <div id="worm-leaderboard-list"></div>
+    </div>
+
+    <div id="worm-control-panel" aria-label="Réglages et téléportation">
+        <div class="panel-topbar">
+            <button class="panel-tab active" type="button" data-panel-tab="settings">Réglages</button>
+            <button class="panel-tab" type="button" data-panel-tab="teleport">TP</button>
+        </div>
+
+        <section class="panel-section active" data-panel-section="settings" aria-label="Réglages de simulation">
+            <div class="panel-heading">Réglages</div>
+            <label class="setting-row" for="settings-friction">
+                <span>Friction</span>
+                <strong id="settings-friction-value">0.00</strong>
+            </label>
+            <input id="settings-friction" type="range" min="0" max="1" step="0.01" value="0">
+
+            <label class="setting-row" for="settings-move-factor">
+                <span>Move factor</span>
+                <strong id="settings-move-factor-value">50</strong>
+            </label>
+            <input id="settings-move-factor" type="range" min="1" max="100" step="1" value="50">
+        </section>
+
+        <section class="panel-section" data-panel-section="teleport" aria-label="Téléportation">
+            <div class="panel-heading">Téléportation</div>
+            <div id="worm-teleport-bar"></div>
+        </section>
     </div>
     <div id="scrollIndication">Zoom: 100%</div>
 </body>
